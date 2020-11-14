@@ -3,8 +3,8 @@ package game
 import "fmt"
 
 type Mana struct {
-	Mana    int `json:"mana"`
-	MaxMana int `json:"max_mana"`
+	Mana    int `bson:"mana"`
+	MaxMana int `bson:"maxMana"`
 }
 
 func (m *Mana) String() string {

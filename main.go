@@ -1,16 +1,12 @@
 package main
 
 import (
+	"CatLegends/events"
 	"CatLegends/utils"
-	"context"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	_ "github.com/joho/godotenv/autoload"
 	log "github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"os"
-	"strings"
-	"time"
 )
 
 func init() {
@@ -19,58 +15,15 @@ func init() {
 }
 
 func main() {
-	client, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGODB")))
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer func() {
-		if err := client.Disconnect(ctx); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	//collection := client.Database("cat_legends").Collection("entities")
-
-	//p := game.NewPlayer()
-	//p.Level = game.Level{
-	//	Level:       5,
-	//	XP:  2,
-	//	LevelUpXP: 7,
-	//}
-	//p.Health = game.Health{
-	//	Health:    20,
-	//	MaxHealth: 24,
-	//}
-	//p.Mana = game.Mana{
-	//	Mana:    8,
-	//	MaxMana: 12,
-	//}
-	//
-	//insertResult, err := collection.InsertOne(context.TODO(), p)
-	//if err != nil {
-	//	log.Error(err)
-	//}
-	//fmt.Println("Inserted with ID:", insertResult.InsertedID)
-
-	//filter := bson.D{}
-	//var newP game.Player
-	//err = collection.FindOne(context.TODO(), filter).Decode(&newP)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//fmt.Println("Found: ", &newP)
+	utils.InitDB()
+	defer utils.CloseDB()
 
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TOKEN"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Infof("Authorized on account %s", bot.Self.UserName)
+	log.Info("Telegram Bot authorized: ", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -81,26 +34,59 @@ func main() {
 	}
 
 	for update := range updates {
-		if update.Message == nil {
-			continue
-		}
+		if update.Message != nil && update.Message.Chat.IsPrivate() {
+			chatId := update.Message.Chat.ID
+			msg := tgbotapi.NewMessage(chatId, "")
 
-		if update.Message.Chat.IsPrivate() {
 			if update.Message.IsCommand() {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-
 				switch update.Message.Command() {
 				case "start":
-					msg.Text = strings.Replace(startMessage, "%name%", update.Message.From.FirstName, 1)
+					events.Start(&msg, &update)
 				case "help":
-					msg.Text = helpMessage
+					events.Help(&msg)
+				case "stats":
+					events.Stats(&msg, chatId)
 				default:
-					msg.Text = unknownCommandMessage
+					msg.Text = events.UnknownCommandMessage
 				}
+			} else {
+				msg.Text = events.UnknownMessage
+			}
 
+			if _, err := bot.Send(msg); err != nil {
+				log.Error(err)
+			}
+		}
+
+		if update.CallbackQuery != nil {
+			chatId := update.CallbackQuery.Message.Chat.ID
+			msgId := update.CallbackQuery.Message.MessageID
+			cb := tgbotapi.NewCallback(update.CallbackQuery.ID, "")
+			var msg tgbotapi.Chattable
+			var ok bool
+
+			switch update.CallbackQuery.Data {
+			case events.NewPlayerCallback:
+				msg, ok = events.NewPlayer(&cb, chatId, msgId)
+			case events.ExistingPlayerCallback:
+				m := tgbotapi.NewMessage(chatId, "")
+				events.Stats(&m, chatId)
+				msg = m
+				ok = true
+			default:
+				cb.Text = events.UnknownCallback
+			}
+
+			if ok {
 				if _, err := bot.Send(msg); err != nil {
 					log.Error(err)
 				}
+			}
+
+			_, err := bot.AnswerCallbackQuery(cb)
+			if err != nil {
+				log.Error(err)
+				continue
 			}
 		}
 	}

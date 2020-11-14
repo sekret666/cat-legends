@@ -3,9 +3,9 @@ package game
 import "fmt"
 
 type BaseEntity struct {
-	Level  Level  `json:"level"`
-	Health Health `json:"health"`
-	Mana   Mana   `json:"mana"`
+	Level  Level  `bson:"level"`
+	Health Health `bson:"health"`
+	Mana   Mana   `bson:"mana"`
 }
 
 func (b *BaseEntity) String() string {

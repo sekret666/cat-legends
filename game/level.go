@@ -7,9 +7,9 @@ const (
 )
 
 type Level struct {
-	Level     int `json:"level"`
-	XP        int `json:"xp"`
-	LevelUpXP int `json:"level_up_xp"`
+	Level     int `bson:"level"`
+	XP        int `bson:"xp"`
+	LevelUpXP int `bson:"levelUpXP"`
 }
 
 func (l *Level) String() string {

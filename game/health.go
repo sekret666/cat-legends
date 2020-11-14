@@ -3,8 +3,8 @@ package game
 import "fmt"
 
 type Health struct {
-	Health    int `json:"health"`
-	MaxHealth int `json:"max_health"`
+	Health    int `bson:"health"`
+	MaxHealth int `bson:"maxHealth"`
 }
 
 func (h *Health) String() string {
