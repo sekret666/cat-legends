@@ -8,8 +8,10 @@ import (
 
 const startMessage = `
 Привіт %name%!
-Вітаю тебе у текстовій RPG грі Cat Legends
-Для початку гри переглянь інструкції: /help
+Вітаю тебе у текстовій RPG грі
+Cat Legends
+Для початку гри переглянь інструкції:
+/help
 `
 
 const (

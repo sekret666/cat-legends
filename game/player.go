@@ -8,8 +8,9 @@ import (
 )
 
 type Player struct {
-	BaseEntity
-	ChatId int64 `bson:"chatId"`
+	BaseEntity `bson:"base"`
+	ChatId     int64     `bson:"chatId"`
+	Inventory  Inventory `bson:"inventory"`
 }
 
 func NewPlayer() *Player {

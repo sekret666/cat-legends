@@ -25,6 +25,8 @@ func main() {
 
 	log.Info("Telegram Bot authorized: ", bot.Self.UserName)
 
+	//bot.Debug = true
+
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
@@ -46,6 +48,8 @@ func main() {
 					events.Help(&msg)
 				case "stats":
 					events.Stats(&msg, chatId)
+				case "inventory":
+					events.Inventory(&msg, chatId)
 				default:
 					msg.Text = events.UnknownCommandMessage
 				}

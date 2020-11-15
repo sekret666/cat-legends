@@ -1,6 +1,10 @@
 package game
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
 const (
 	levelUpXP = 30
@@ -16,6 +20,21 @@ func (l *Level) String() string {
 	return fmt.Sprintf("Level: %v [%v/%v]", l.Level, l.XP, l.LevelUpXP)
 }
 
+func (l *Level) GetStringMap() map[string]string {
+	m := make(map[string]string)
+	m["%lvl%"] = strconv.Itoa(l.Level)
+	m["%XP%"] = strconv.Itoa(l.XP)
+	m["%lvlUpXP%"] = strconv.Itoa(l.LevelUpXP)
+	return m
+}
+
+func (l *Level) ReplaceInString(text string) string {
+	for k, v := range l.GetStringMap() {
+		text = strings.Replace(text, k, v, -1)
+	}
+	return text
+}
+
 /*
 
    FIX
@@ -28,4 +47,4 @@ func (l *Level)LevelUp()  {
 	}
 }
 
- */
+*/
