@@ -3,7 +3,6 @@ package main
 import (
 	"CatLegends/events"
 	"CatLegends/utils"
-	"fmt"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	_ "github.com/joho/godotenv/autoload"
 	log "github.com/sirupsen/logrus"
@@ -69,29 +68,32 @@ func main() {
 			chatId := update.CallbackQuery.Message.Chat.ID
 			msgId := update.CallbackQuery.Message.MessageID
 			cb := tgbotapi.NewCallback(update.CallbackQuery.ID, "")
-			var msg tgbotapi.Chattable
-			var ok bool
 
 			qData := update.CallbackQuery.Data
 
 			if qData == events.NewPlayerCallback {
-				msg, ok = events.NewPlayer(&cb, chatId, msgId)
+				events.NewPlayer(&cb, chatId, msgId, bot)
 			} else if qData == events.PlayerStatsCallback {
-				m := tgbotapi.NewMessage(chatId, "")
-				events.Stats(&m, chatId)
-				msg = m
-				ok = true
+				msg := tgbotapi.NewMessage(chatId, "")
+				events.Stats(&msg, chatId)
+				if _, err := bot.Send(msg); err != nil {
+					log.Error(err)
+					cb.Text = events.ErrorText
+				}
 			} else if qData == events.PlayerInventoryCallback {
-				m := tgbotapi.NewMessage(chatId, "")
-				events.Inventory(&m, chatId, 0)
-				msg = m
-				ok = true
+				msg := tgbotapi.NewMessage(chatId, "")
+				events.Inventory(&msg, chatId, 0)
+				if _, err := bot.Send(msg); err != nil {
+					log.Error(err)
+					cb.Text = events.ErrorText
+				}
 			} else if strings.HasPrefix(qData, "page_") {
 				page, err := strconv.ParseInt(qData[5:], 10, 32)
 				if err != nil {
 					log.Error(err)
+					cb.Text = events.ErrorText
 				} else {
-					msg, ok = events.UpdateInventory(msgId, chatId, int(page))
+					ok := events.UpdateInventory(msgId, chatId, int(page), bot)
 					if !ok {
 						cb.Text = events.NoPlayerText
 					}
@@ -100,17 +102,15 @@ func main() {
 				itemInd, err := strconv.ParseInt(qData[5:], 10, 32)
 				if err != nil {
 					log.Error(err)
+					cb.Text = events.ErrorText
 				} else {
-					fmt.Println(itemInd)
+					ok := events.ShowItem(msgId, chatId, int(itemInd), bot)
+					if !ok {
+						cb.Text = events.ErrorText
+					}
 				}
 			} else {
 				cb.Text = events.UnknownCallback
-			}
-
-			if ok {
-				if _, err := bot.Send(msg); err != nil {
-					log.Error(err)
-				}
 			}
 
 			_, err := bot.AnswerCallbackQuery(cb)

@@ -56,3 +56,7 @@ func (inv *Inventory) GetInlineKeyboard(page int) tgbotapi.InlineKeyboardMarkup 
 
 	return kb
 }
+
+func GetInventoryPageFromIndex(ind int) int {
+	return ind / (itemsPerRow * rowsRerPage)
+}

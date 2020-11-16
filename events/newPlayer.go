@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func NewPlayer(cb *tgbotapi.CallbackConfig, chatId int64, msgId int) (tgbotapi.Chattable, bool) {
+func NewPlayer(cb *tgbotapi.CallbackConfig, chatId int64, msgId int, bot *tgbotapi.BotAPI) {
 	p := game.InitPlayer(chatId)
 
 	p.Inventory.Items = []game.Item{
@@ -79,12 +79,13 @@ func NewPlayer(cb *tgbotapi.CallbackConfig, chatId int64, msgId int) (tgbotapi.C
 			log.Error(err)
 			cb.Text = ErrorText
 			cb.ShowAlert = true
-			return nil, false
+			return
 		}
 	}
 
 	cb.Text = "Персонаж створений"
-	//editedMsg := tgbotapi.NewEditMessageReplyMarkup(chatId, msgId, tgbotapi.InlineKeyboardMarkup{InlineKeyboard: make([][]tgbotapi.InlineKeyboardButton, 0, 0)})
-	editedMsg := tgbotapi.NewEditMessageReplyMarkup(chatId, msgId, existingPlayerKeyboard)
-	return editedMsg, true
+	msgEdit := tgbotapi.NewEditMessageReplyMarkup(chatId, msgId, existingPlayerKeyboard)
+	if _, err := bot.Send(msgEdit); err != nil {
+		log.Error(err)
+	}
 }

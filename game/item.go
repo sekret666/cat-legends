@@ -1,12 +1,16 @@
 package game
 
+import (
+	"strconv"
+	"strings"
+)
+
 const (
-	_ int = iota
-	CommonRarity
-	UncommonRarity
-	RareRarity
-	EpicRarity
-	LegendaryRarity
+	CommonRarity    = "Звичайний"
+	UncommonRarity  = "Незвичайний"
+	RareRarity      = "Рідкісний"
+	EpicRarity      = "Епічний"
+	LegendaryRarity = "Легендарний"
 )
 
 const (
@@ -23,5 +27,23 @@ type Item struct {
 	Quantity    int    `bson:"quantity"`
 	Description string `bson:"description"`
 	Price       int    `bson:"price"`
-	Rarity      int    `bson:"rarity"`
+	Rarity      string `bson:"rarity"`
+}
+
+func (i *Item) GetStringMap() map[string]string {
+	m := make(map[string]string)
+	m["%itemName%"] = i.Name
+	m["%itemEmoji%"] = i.Emoji
+	m["%itemQuantity%"] = strconv.Itoa(i.Quantity)
+	m["%itemDescription%"] = i.Description
+	m["%itemPrice%"] = strconv.Itoa(i.Price)
+	m["%itemRarity%"] = i.Rarity
+	return m
+}
+
+func (i *Item) ReplaceInString(text string) string {
+	for k, v := range i.GetStringMap() {
+		text = strings.Replace(text, k, v, -1)
+	}
+	return text
 }
