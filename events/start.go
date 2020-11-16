@@ -15,8 +15,9 @@ Cat Legends
 `
 
 const (
-	NewPlayerCallback      = "newPlayer"
-	ExistingPlayerCallback = "existingPlayer"
+	NewPlayerCallback       = "newPlayer"
+	PlayerStatsCallback     = "playerStats"
+	PlayerInventoryCallback = "playerInventory"
 )
 
 var newPlayerKeyboard = tgbotapi.NewInlineKeyboardMarkup(
@@ -27,7 +28,8 @@ var newPlayerKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 var existingPlayerKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Мій персонаж", ExistingPlayerCallback),
+		tgbotapi.NewInlineKeyboardButtonData("Мій персонаж", PlayerStatsCallback),
+		tgbotapi.NewInlineKeyboardButtonData("Інвентар", PlayerInventoryCallback),
 	),
 )
 

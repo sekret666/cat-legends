@@ -3,10 +3,13 @@ package main
 import (
 	"CatLegends/events"
 	"CatLegends/utils"
+	"fmt"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	_ "github.com/joho/godotenv/autoload"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func init() {
@@ -49,7 +52,7 @@ func main() {
 				case "stats":
 					events.Stats(&msg, chatId)
 				case "inventory":
-					events.Inventory(&msg, chatId)
+					events.Inventory(&msg, chatId, 0)
 				default:
 					msg.Text = events.UnknownCommandMessage
 				}
@@ -69,15 +72,38 @@ func main() {
 			var msg tgbotapi.Chattable
 			var ok bool
 
-			switch update.CallbackQuery.Data {
-			case events.NewPlayerCallback:
+			qData := update.CallbackQuery.Data
+
+			if qData == events.NewPlayerCallback {
 				msg, ok = events.NewPlayer(&cb, chatId, msgId)
-			case events.ExistingPlayerCallback:
+			} else if qData == events.PlayerStatsCallback {
 				m := tgbotapi.NewMessage(chatId, "")
 				events.Stats(&m, chatId)
 				msg = m
 				ok = true
-			default:
+			} else if qData == events.PlayerInventoryCallback {
+				m := tgbotapi.NewMessage(chatId, "")
+				events.Inventory(&m, chatId, 0)
+				msg = m
+				ok = true
+			} else if strings.HasPrefix(qData, "page_") {
+				page, err := strconv.ParseInt(qData[5:], 10, 32)
+				if err != nil {
+					log.Error(err)
+				} else {
+					msg, ok = events.UpdateInventory(msgId, chatId, int(page))
+					if !ok {
+						cb.Text = events.NoPlayerText
+					}
+				}
+			} else if strings.HasPrefix(qData, "item_") {
+				itemInd, err := strconv.ParseInt(qData[5:], 10, 32)
+				if err != nil {
+					log.Error(err)
+				} else {
+					fmt.Println(itemInd)
+				}
+			} else {
 				cb.Text = events.UnknownCallback
 			}
 
