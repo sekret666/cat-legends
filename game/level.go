@@ -30,7 +30,7 @@ func (l *Level) GetStringMap() map[string]string {
 
 func (l *Level) ReplaceInString(text string) string {
 	for k, v := range l.GetStringMap() {
-		text = strings.Replace(text, k, v, -1)
+		text = strings.ReplaceAll(text, k, v)
 	}
 	return text
 }

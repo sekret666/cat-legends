@@ -24,7 +24,7 @@ func (m *Mana) GetStringMap() map[string]string {
 
 func (m *Mana) ReplaceInString(text string) string {
 	for k, v := range m.GetStringMap() {
-		text = strings.Replace(text, k, v, -1)
+		text = strings.ReplaceAll(text, k, v)
 	}
 	return text
 }

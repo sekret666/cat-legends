@@ -19,6 +19,8 @@ const itemInfo = `
 
 <code>%itemDescription%</code>
 
+%itemTypeInfo%
+
 Ціна: %itemPrice%
 `
 
