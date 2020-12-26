@@ -16,9 +16,7 @@ func (c *Clothing) GetStringMap() map[string]string {
 }
 
 func (c *Clothing) DefaultPattern() string {
-	return `
-<code>Захист: %defence%</code>
-`
+	return `<code>Захист: %defence%</code>`
 }
 
 func (c *Clothing) Info(pattern string) string {

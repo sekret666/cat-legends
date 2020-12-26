@@ -12,49 +12,44 @@ func NewPlayer(cb *tgbotapi.CallbackConfig, chatId int64, msgId int, bot *tgbota
 	p := game.InitPlayer(chatId)
 
 	p.Inventory.Items = append(p.Inventory.Items, game.Item{
-		Name:        "Test Sword",
-		Emoji:       game.SwordEmoji,
-		Quantity:    1,
-		Description: "Test sword item description",
-		Price:       15,
-		Rarity:      game.UncommonRarity,
-		ItemType: &items.Weapon{
+		Name:            "Test Sword",
+		Emoji:           game.SwordEmoji,
+		Quantity:        1,
+		Description:     "Test sword item description",
+		Price:           15,
+		Rarity:          game.UncommonRarity,
+		ItemDetailsType: items.WeaponType,
+		ItemDetails: &items.Weapon{
 			Damage:    10,
 			OneHanded: false,
 		},
-		ItemTypeRaw: game.ItemTypeRaw{
-			Type: "weapon",
+	})
+
+	p.Inventory.Items = append(p.Inventory.Items, game.Item{
+		Name:            "Test Clothing",
+		Emoji:           game.ClothingEmoji,
+		Quantity:        1,
+		Description:     "Test clothing item description",
+		Price:           10,
+		Rarity:          game.RareRarity,
+		ItemDetailsType: items.ClothingType,
+		ItemDetails: &items.Clothing{
+			Defence: 5,
 		},
 	})
-	err := p.Inventory.Items[0].ItemTypeRaw.ItemTypeToRaw(p.Inventory.Items[0].ItemType)
-	if err != nil {
-		log.Error(err)
-		return
-	}
 
-	//p.Inventory.Items = append(p.Inventory.Items, game.Item{
-	//	Name:        "Test Clothing",
-	//	Emoji:       game.ClothingEmoji,
-	//	Quantity:    1,
-	//	Description: "Test clothing item description",
-	//	Price:       10,
-	//	Rarity:      game.RareRarity,
-	//	ItemType: &items.Clothing{
-	//		Defence: 5,
-	//	},
-	//})
-	//
-	//p.Inventory.Items = append(p.Inventory.Items, game.Item{
-	//	Name:        "Test Accessory",
-	//	Emoji:       game.AccessoriesEmoji,
-	//	Quantity:    1,
-	//	Description: "Test accessory item description",
-	//	Price:       20,
-	//	Rarity:      game.CommonRarity,
-	//	ItemType: &items.Accessory{
-	//		Effect: "Test effect",
-	//	},
-	//})
+	p.Inventory.Items = append(p.Inventory.Items, game.Item{
+		Name:            "Test Accessory",
+		Emoji:           game.AccessoriesEmoji,
+		Quantity:        1,
+		Description:     "Test accessory item description",
+		Price:           20,
+		Rarity:          game.CommonRarity,
+		ItemDetailsType: items.AccessoriesType,
+		ItemDetails: &items.Accessory{
+			Effect: "Test effect",
+		},
+	})
 
 	db := utils.GetDB()
 

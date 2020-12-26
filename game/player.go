@@ -55,14 +55,6 @@ func GetPlayerById(chatId int64) (*Player, bool) {
 			return nil, false
 		}
 	} else {
-		for _, item := range p.Inventory.Items {
-			it, err := item.ItemTypeRaw.RawToItemType()
-			if err != nil {
-				log.Error(err)
-				return nil, false
-			}
-			item.ItemType = it
-		}
 		return p, true
 	}
 }

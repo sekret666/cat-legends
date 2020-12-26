@@ -2,7 +2,7 @@ package game
 
 import (
 	"CatLegends/game/items"
-	"errors"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"strconv"
 	"strings"
@@ -24,42 +24,84 @@ const (
 	AccessoriesEmoji = "🌂"
 )
 
-type ItemTypeRaw struct {
-	Type string   `bson:"type"`
-	Raw  bson.Raw `bson:"raw"`
-}
-
-func (i ItemTypeRaw) ItemTypeToRaw(it ItemType) (err error) {
-	i.Raw, err = bson.Marshal(it)
-	return err
-}
-
-func (i ItemTypeRaw) RawToItemType() (it ItemType, err error) {
-	switch i.Type {
-	case "weapon":
-		var w items.Weapon
-		err = bson.Unmarshal(i.Raw, &w)
-		it = &w
-	default:
-		err = errors.New("invalid item type")
-	}
-	return it, err
-}
-
-type ItemType interface {
+type ItemDetails interface {
 	Info(pattern string) string
 	DefaultPattern() string
 }
 
 type Item struct {
-	Name        string      `bson:"name"`
-	Emoji       string      `bson:"emoji"`
-	Quantity    int         `bson:"quantity"`
-	Description string      `bson:"description"`
-	Price       int         `bson:"price"`
-	Rarity      string      `bson:"rarity"`
-	ItemType    ItemType    `bson:"-"`
-	ItemTypeRaw ItemTypeRaw `bson:"itemTypeRaw"`
+	Name            string      `bson:"name"`
+	Emoji           string      `bson:"emoji"`
+	Quantity        int         `bson:"quantity"`
+	Description     string      `bson:"description"`
+	Price           int         `bson:"price"`
+	Rarity          string      `bson:"rarity"`
+	ItemDetailsType string      `bson:"itemDetailsType"`
+	ItemDetails     ItemDetails `bson:"itemDetails"`
+}
+
+func (i *Item) UnmarshalBSON(bytes []byte) error {
+	var raw bson.Raw
+	if err := bson.Unmarshal(bytes, &raw); err != nil {
+		return err
+	}
+
+	var itemDetailsType string
+	if err := raw.Lookup("itemDetailsType").Unmarshal(&itemDetailsType); err != nil {
+		return err
+	}
+
+	switch itemDetailsType {
+	case items.WeaponType:
+		var w items.Weapon
+		if err := raw.Lookup("itemDetails").Unmarshal(&w); err != nil {
+			return err
+		}
+		i.ItemDetails = &w
+		break
+	case items.ClothingType:
+		var c items.Clothing
+		if err := raw.Lookup("itemDetails").Unmarshal(&c); err != nil {
+			return err
+		}
+		i.ItemDetails = &c
+		break
+	case items.AccessoriesType:
+		var a items.Accessory
+		if err := raw.Lookup("itemDetails").Unmarshal(&a); err != nil {
+			return err
+		}
+		i.ItemDetails = &a
+		break
+	default:
+		return fmt.Errorf("unkown item details type: %s", itemDetailsType)
+	}
+
+	if err := raw.Lookup("name").Unmarshal(&i.Name); err != nil {
+		return err
+	}
+
+	if err := raw.Lookup("emoji").Unmarshal(&i.Emoji); err != nil {
+		return err
+	}
+
+	if err := raw.Lookup("quantity").Unmarshal(&i.Quantity); err != nil {
+		return err
+	}
+
+	if err := raw.Lookup("description").Unmarshal(&i.Description); err != nil {
+		return err
+	}
+
+	if err := raw.Lookup("price").Unmarshal(&i.Price); err != nil {
+		return err
+	}
+
+	if err := raw.Lookup("rarity").Unmarshal(&i.Rarity); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (i *Item) GetStringMap() map[string]string {
@@ -70,7 +112,7 @@ func (i *Item) GetStringMap() map[string]string {
 	m["%itemDescription%"] = i.Description
 	m["%itemPrice%"] = strconv.Itoa(i.Price)
 	m["%itemRarity%"] = i.Rarity
-	m["%itemTypeInfo%"] = i.ItemType.Info(i.ItemType.DefaultPattern())
+	m["%itemTypeInfo%"] = i.ItemDetails.Info(i.ItemDetails.DefaultPattern())
 	return m
 }
 

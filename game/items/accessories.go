@@ -15,9 +15,7 @@ func (a *Accessory) GetStringMap() map[string]string {
 }
 
 func (a *Accessory) DefaultPattern() string {
-	return `
-<code>Ефект: %effect%</code>
-`
+	return `<code>Ефект: %effect%</code>`
 }
 
 func (a *Accessory) Info(pattern string) string {

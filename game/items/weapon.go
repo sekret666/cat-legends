@@ -22,10 +22,8 @@ func (w *Weapon) GetStringMap() map[string]string {
 }
 
 func (w *Weapon) DefaultPattern() string {
-	return `
-<code>Ушкодження: %damage%
-Одноручна:  %oneHanded%</code>
-`
+	return `<code>Ушкодження: %damage%
+Одноручна:  %oneHanded%</code>`
 }
 
 func (w *Weapon) Info(pattern string) string {
