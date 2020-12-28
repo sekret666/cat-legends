@@ -4,7 +4,7 @@ import (
 	"CatLegends/game"
 	"CatLegends/game/items"
 	"CatLegends/utils"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	log "github.com/sirupsen/logrus"
 )
 

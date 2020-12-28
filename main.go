@@ -3,7 +3,7 @@ package main
 import (
 	"CatLegends/events"
 	"CatLegends/utils"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	_ "github.com/joho/godotenv/autoload"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -17,6 +17,9 @@ func init() {
 }
 
 func main() {
+	log.Info("Startup")
+	log.Info("------------------")
+
 	utils.InitDB()
 	defer utils.CloseDB()
 
@@ -32,10 +35,7 @@ func main() {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates, err := bot.GetUpdatesChan(u)
-	if err != nil {
-		log.Fatal(err)
-	}
+	updates := bot.GetUpdatesChan(u)
 
 	for update := range updates {
 		if update.Message != nil && update.Message.Chat.IsPrivate() {
@@ -113,7 +113,7 @@ func main() {
 				cb.Text = events.UnknownCallback
 			}
 
-			_, err := bot.AnswerCallbackQuery(cb)
+			_, err := bot.Send(cb)
 			if err != nil {
 				log.Error(err)
 				continue

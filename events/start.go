@@ -2,7 +2,7 @@ package events
 
 import (
 	"CatLegends/game"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"strings"
 )
 
