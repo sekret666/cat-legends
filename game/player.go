@@ -19,7 +19,6 @@ func NewPlayer() *Player {
 
 func InitPlayer(chatId int64) *Player {
 	p := NewPlayer()
-
 	p.ChatId = chatId
 
 	p.Level = Level{
@@ -45,7 +44,6 @@ func GetPlayerById(chatId int64) (*Player, bool) {
 	db := utils.GetDB()
 
 	p := NewPlayer()
-	p.ChatId = chatId
 	err := db.Players.FindOne(db.Ctx, bson.M{"chatId": chatId}).Decode(&p)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {

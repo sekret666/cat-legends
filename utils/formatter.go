@@ -8,9 +8,9 @@ import (
 
 const (
 	// Default log format will output [INFO] 2 2020-11-10 23:52:43 /home/user/project/main.go:24 main.main - Log message
-	defaultLogFormat        = "[%lvl%] %time% %file%:%line% %func% - %msg%\n"
+	defaultLogFormat              = "[%lvl%] %time% %file%:%line% %func% - %msg%\n"
 	defaultLogFormatWithoutCaller = "[%lvl%] %time% - %msg%\n"
-	defaultTimestampFormat  = "2006-01-02 15:04:05"
+	defaultTimestampFormat        = "2006-01-02 15:04:05"
 )
 
 // Formatter implements logrus.Formatter interface.
@@ -34,7 +34,7 @@ func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 		output = strings.Replace(output, "%line%", strconv.Itoa(entry.Caller.Line), 1)
 		output = strings.Replace(output, "%func%", entry.Caller.Function, 1)
 		output = strings.Replace(output, "%file%", entry.Caller.File, 1)
-	}else if output == defaultLogFormat{
+	} else if output == defaultLogFormat {
 		output = defaultLogFormatWithoutCaller
 	}
 

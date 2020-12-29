@@ -38,7 +38,7 @@ func main() {
 	updates := bot.GetUpdatesChan(u)
 
 	for update := range updates {
-		if update.Message != nil && update.Message.Chat.IsPrivate() {
+		if update.Message != nil && update.Message.Chat.IsPrivate() && update.Message.Dice == nil {
 			chatId := update.Message.Chat.ID
 			msg := tgbotapi.NewMessage(chatId, "")
 
@@ -52,10 +52,29 @@ func main() {
 					events.Stats(&msg, chatId)
 				case "inventory":
 					events.Inventory(&msg, chatId, 0)
+				case "battle":
+					events.Battle(&msg, chatId)
 				default:
 					msg.Text = events.UnknownCommandMessage
 				}
 			} else {
+				msg.Text = events.UnknownMessage
+			}
+
+			if _, err := bot.Send(msg); err != nil {
+				log.Error(err)
+			}
+		}
+
+		if update.Message != nil && update.Message.Dice != nil {
+			chatId := update.Message.Chat.ID
+			msg := tgbotapi.NewMessage(chatId, "")
+
+			switch update.Message.Dice.Emoji {
+			case "🎲":
+				events.EscapeStatus(&msg, &update)
+				break
+			default:
 				msg.Text = events.UnknownMessage
 			}
 
@@ -79,6 +98,8 @@ func main() {
 				if _, err := bot.Send(msg); err != nil {
 					log.Error(err)
 					cb.Text = events.ErrorText
+				} else {
+					cb.Text = "Статистика"
 				}
 			} else if qData == events.PlayerInventoryCallback {
 				msg := tgbotapi.NewMessage(chatId, "")
@@ -86,6 +107,8 @@ func main() {
 				if _, err := bot.Send(msg); err != nil {
 					log.Error(err)
 					cb.Text = events.ErrorText
+				} else {
+					cb.Text = "Інвентар"
 				}
 			} else if strings.HasPrefix(qData, "page_") {
 				page, err := strconv.ParseInt(qData[5:], 10, 32)
@@ -108,6 +131,24 @@ func main() {
 					if !ok {
 						cb.Text = events.ErrorText
 					}
+				}
+			} else if qData == events.NewBattleCallback {
+				msg := tgbotapi.NewMessage(chatId, "Battle")
+				//events.Stats(&msg, chatId)
+				if _, err := bot.Send(msg); err != nil {
+					log.Error(err)
+					cb.Text = events.ErrorText
+				} else {
+					cb.Text = "Бій"
+				}
+			} else if qData == events.NewEscapeCallback {
+				msg := tgbotapi.NewMessage(chatId, "Escape")
+				events.Escape(&msg)
+				if _, err := bot.Send(msg); err != nil {
+					log.Error(err)
+					cb.Text = events.ErrorText
+				} else {
+					cb.Text = "Втеча"
 				}
 			} else {
 				cb.Text = events.UnknownCallback

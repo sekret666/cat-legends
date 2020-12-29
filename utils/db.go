@@ -18,6 +18,7 @@ type DataBase struct {
 	Ctx     context.Context
 	client  *mongo.Client
 	Players *mongo.Collection
+	Enemies *mongo.Collection
 }
 
 func InitDB() {
@@ -29,11 +30,13 @@ func InitDB() {
 	}
 
 	playersCollection := client.Database("cat_legends").Collection("players")
+	enemiesCollection := client.Database("cat_legends").Collection("enemies")
 
 	dataBase = DataBase{
 		Ctx:     ctx,
 		client:  client,
 		Players: playersCollection,
+		Enemies: enemiesCollection,
 	}
 
 	log.Info("Database init successful")
