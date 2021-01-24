@@ -44,8 +44,7 @@ func GetPlayerById(chatId int64) (*Player, bool) {
 	db := utils.GetDB()
 
 	p := NewPlayer()
-	err := db.Players.FindOne(db.Ctx, bson.M{"chatId": chatId}).Decode(&p)
-	if err != nil {
+	if err := db.Players.FindOne(db.Ctx, bson.M{"chatId": chatId}).Decode(&p); err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, false
 		} else {

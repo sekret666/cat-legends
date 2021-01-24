@@ -15,6 +15,9 @@ const (
 	escapeStatusText = `Випало %dice%, ви %status%`
 )
 
+// Minimum to escape from battle
+const escapeDice = 4
+
 func Escape(msg *tgbotapi.MessageConfig) {
 	msg.Text = escapeText
 	msg.ParseMode = tgbotapi.ModeHTML
@@ -23,13 +26,12 @@ func Escape(msg *tgbotapi.MessageConfig) {
 func EscapeStatus(msg *tgbotapi.MessageConfig, update *tgbotapi.Update) {
 	chatId := update.Message.Chat.ID
 
-	e, ok := game.GetEnemyById(chatId)
-	if ok {
+	if e, ok := game.GetEnemyById(chatId); ok {
 		if e.EscapeStatus == game.CanEscape {
 			dice := update.Message.Dice.Value
 
 			msgText := strings.ReplaceAll(escapeStatusText, "%dice%", strconv.Itoa(dice))
-			if dice >= 4 {
+			if dice >= escapeDice {
 				msgText = strings.ReplaceAll(msgText, "%status%", "втекли")
 			} else {
 				msgText = strings.ReplaceAll(msgText, "%status%", "не змогли втекли")

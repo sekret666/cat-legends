@@ -20,8 +20,7 @@ const playerStats = `
 `
 
 func Stats(msg *tgbotapi.MessageConfig, chatId int64) {
-	p, ok := game.GetPlayerById(chatId)
-	if ok {
+	if p, ok := game.GetPlayerById(chatId); ok {
 		msgText := p.Level.ReplaceInString(playerStats)
 		msgText = p.Health.ReplaceInString(msgText)
 		msgText = p.Mana.ReplaceInString(msgText)

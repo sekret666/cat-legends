@@ -27,12 +27,12 @@ var newEnemyKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 )
 
 func Battle(msg *tgbotapi.MessageConfig, chatId int64) {
+	db := utils.GetDB()
+
 	var e *game.Enemy
 	var ok bool
 
 	e, ok = game.GetEnemyById(chatId)
-
-	db := utils.GetDB()
 	if !ok {
 		e = game.GenerateEnemy(chatId, 1)
 		_, err := db.Enemies.InsertOne(db.Ctx, e)

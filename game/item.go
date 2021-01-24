@@ -58,21 +58,18 @@ func (i *Item) UnmarshalBSON(bytes []byte) error {
 			return err
 		}
 		i.ItemDetails = &w
-		break
 	case items.ClothingType:
 		var c items.Clothing
 		if err := raw.Lookup("itemDetails").Unmarshal(&c); err != nil {
 			return err
 		}
 		i.ItemDetails = &c
-		break
 	case items.AccessoriesType:
 		var a items.Accessory
 		if err := raw.Lookup("itemDetails").Unmarshal(&a); err != nil {
 			return err
 		}
 		i.ItemDetails = &a
-		break
 	default:
 		return fmt.Errorf("unkown item details type: %s", itemDetailsType)
 	}

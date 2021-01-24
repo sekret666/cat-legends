@@ -43,8 +43,7 @@ func GetEnemyById(chatId int64) (*Enemy, bool) {
 	db := utils.GetDB()
 
 	e := NewEnemy()
-	err := db.Enemies.FindOne(db.Ctx, bson.M{"chatId": chatId}).Decode(&e)
-	if err != nil {
+	if err := db.Enemies.FindOne(db.Ctx, bson.M{"chatId": chatId}).Decode(&e); err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, false
 		} else {

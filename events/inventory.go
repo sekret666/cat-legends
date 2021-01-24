@@ -25,13 +25,11 @@ const itemInfo = `
 `
 
 func Inventory(msg *tgbotapi.MessageConfig, chatId int64, page int) {
-	p, ok := game.GetPlayerById(chatId)
-	if ok {
+	if p, ok := game.GetPlayerById(chatId); ok {
 		msgText := p.Inventory.Money.ReplaceInString(playerInventory)
 
 		msg.Text = msgText
 		msg.ParseMode = tgbotapi.ModeHTML
-
 		msg.ReplyMarkup = p.Inventory.GetInlineKeyboard(page)
 	} else {
 		msg.Text = NoPlayerText
@@ -39,15 +37,14 @@ func Inventory(msg *tgbotapi.MessageConfig, chatId int64, page int) {
 }
 
 func UpdateInventory(msgId int, chatId int64, page int, bot *tgbotapi.BotAPI) bool {
-	p, ok := game.GetPlayerById(chatId)
-	if ok {
+	if p, ok := game.GetPlayerById(chatId); ok {
 		msgEdit := tgbotapi.NewEditMessageText(chatId, msgId, "")
 
 		msgText := p.Inventory.Money.ReplaceInString(playerInventory)
+		inventoryKeyboard := p.Inventory.GetInlineKeyboard(page)
+
 		msgEdit.Text = msgText
 		msgEdit.ParseMode = tgbotapi.ModeHTML
-
-		inventoryKeyboard := p.Inventory.GetInlineKeyboard(page)
 		msgEdit.ReplyMarkup = &inventoryKeyboard
 
 		if _, err := bot.Send(msgEdit); err != nil {
@@ -61,18 +58,19 @@ func UpdateInventory(msgId int, chatId int64, page int, bot *tgbotapi.BotAPI) bo
 }
 
 func ShowItem(msgId int, chatId int64, itemInd int, bot *tgbotapi.BotAPI) bool {
-	p, ok := game.GetPlayerById(chatId)
-	if ok {
+	if p, ok := game.GetPlayerById(chatId); ok {
 		if itemInd >= len(p.Inventory.Items) {
 			return false
 		}
 		item := p.Inventory.Items[itemInd]
 
-		msgEdit := tgbotapi.NewEditMessageText(chatId, msgId, item.ReplaceInString(itemInfo))
-		msgEdit.ParseMode = tgbotapi.ModeHTML
-
 		page := game.GetInventoryPageFromIndex(itemInd)
 		backKeyboard := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(tgbotapi.NewInlineKeyboardButtonData("Назад", "page_"+strconv.Itoa(page))))
+
+		msgEdit := tgbotapi.NewEditMessageText(chatId, msgId, "")
+
+		msgEdit.Text = item.ReplaceInString(itemInfo)
+		msgEdit.ParseMode = tgbotapi.ModeHTML
 		msgEdit.ReplyMarkup = &backKeyboard
 
 		if _, err := bot.Send(msgEdit); err != nil {

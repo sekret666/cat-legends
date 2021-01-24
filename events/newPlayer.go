@@ -53,11 +53,8 @@ func NewPlayer(cb *tgbotapi.CallbackConfig, chatId int64, msgId int, bot *tgbota
 
 	db := utils.GetDB()
 
-	_, ok := game.GetPlayerById(chatId)
-
-	if !ok {
-		_, err := db.Players.InsertOne(db.Ctx, p)
-		if err != nil {
+	if 	_, ok := game.GetPlayerById(chatId); !ok {
+		if _, err := db.Players.InsertOne(db.Ctx, p); err != nil {
 			log.Error(err)
 			cb.Text = ErrorText
 			cb.ShowAlert = true

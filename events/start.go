@@ -35,8 +35,8 @@ var existingPlayerKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 
 func Start(msg *tgbotapi.MessageConfig, update *tgbotapi.Update) {
 	msg.Text = strings.Replace(startMessage, "%name%", update.Message.From.FirstName, 1)
-	_, ok := game.GetPlayerById(update.Message.Chat.ID)
-	if ok {
+
+	if _, ok := game.GetPlayerById(update.Message.Chat.ID); ok {
 		msg.ReplyMarkup = existingPlayerKeyboard
 	} else {
 		msg.ReplyMarkup = newPlayerKeyboard
