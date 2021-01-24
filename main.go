@@ -18,7 +18,6 @@ func init() {
 
 func main() {
 	log.Info("Startup")
-	log.Info("------------------")
 
 	utils.InitDB()
 	defer utils.CloseDB()
@@ -27,18 +26,15 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	log.Info("Telegram Bot authorized: ", bot.Self.UserName)
-
 	//bot.Debug = true
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
-
 	updates := bot.GetUpdatesChan(u)
 
 	for update := range updates {
-		if update.Message != nil && update.Message.Chat.IsPrivate() && update.Message.Dice == nil {
+		if update.Message != nil && update.Message.Chat.IsPrivate() {
 			chatId := update.Message.Chat.ID
 			msg := tgbotapi.NewMessage(chatId, "")
 
@@ -57,6 +53,13 @@ func main() {
 				default:
 					msg.Text = events.UnknownCommandMessage
 				}
+			} else if update.Message.Dice != nil {
+				switch update.Message.Dice.Emoji {
+				case "🎲":
+					events.EscapeStatus(&msg, &update)
+				default:
+					msg.Text = events.UnknownMessage
+				}
 			} else {
 				msg.Text = events.UnknownMessage
 			}
@@ -64,54 +67,35 @@ func main() {
 			if _, err := bot.Send(msg); err != nil {
 				log.Error(err)
 			}
+
+			continue
 		}
 
-		if update.Message != nil && update.Message.Dice != nil {
-			chatId := update.Message.Chat.ID
-			msg := tgbotapi.NewMessage(chatId, "")
-
-			switch update.Message.Dice.Emoji {
-			case "🎲":
-				events.EscapeStatus(&msg, &update)
-				break
-			default:
-				msg.Text = events.UnknownMessage
-			}
-
-			if _, err := bot.Send(msg); err != nil {
-				log.Error(err)
-			}
-		}
-
-		if update.CallbackQuery != nil {
+		if update.CallbackQuery != nil && update.CallbackQuery.Message != nil && update.CallbackQuery.Message.Chat.IsPrivate() {
 			chatId := update.CallbackQuery.Message.Chat.ID
 			msgId := update.CallbackQuery.Message.MessageID
+
 			cb := tgbotapi.NewCallback(update.CallbackQuery.ID, "")
+			msg := tgbotapi.NewMessage(chatId, "")
 
-			qData := update.CallbackQuery.Data
+			queryData := strings.Split(update.CallbackQuery.Data, "_")
 
-			if qData == events.NewPlayerCallback {
+			switch queryData[0] {
+			case events.NewPlayerCallback:
 				events.NewPlayer(&cb, chatId, msgId, bot)
-			} else if qData == events.PlayerStatsCallback {
-				msg := tgbotapi.NewMessage(chatId, "")
+			case events.PlayerStatsCallback:
 				events.Stats(&msg, chatId)
-				if _, err := bot.Send(msg); err != nil {
-					log.Error(err)
-					cb.Text = events.ErrorText
-				} else {
-					cb.Text = "Статистика"
-				}
-			} else if qData == events.PlayerInventoryCallback {
-				msg := tgbotapi.NewMessage(chatId, "")
+				cb.Text = "Статистика"
+			case events.PlayerInventoryCallback:
 				events.Inventory(&msg, chatId, 0)
-				if _, err := bot.Send(msg); err != nil {
-					log.Error(err)
-					cb.Text = events.ErrorText
-				} else {
-					cb.Text = "Інвентар"
-				}
-			} else if strings.HasPrefix(qData, "page_") {
-				page, err := strconv.ParseInt(qData[5:], 10, 32)
+				cb.Text = "Інвентар"
+			case events.NewBattleCallback:
+				cb.Text = "Бій"
+			case events.NewEscapeCallback:
+				events.Escape(&msg)
+				cb.Text = "Втеча"
+			case "page":
+				page, err := strconv.ParseInt(queryData[1], 10, 32)
 				if err != nil {
 					log.Error(err)
 					cb.Text = events.ErrorText
@@ -121,8 +105,8 @@ func main() {
 						cb.Text = events.NoPlayerText
 					}
 				}
-			} else if strings.HasPrefix(qData, "item_") {
-				itemInd, err := strconv.ParseInt(qData[5:], 10, 32)
+			case "item":
+				itemInd, err := strconv.ParseInt(queryData[1], 10, 32)
 				if err != nil {
 					log.Error(err)
 					cb.Text = events.ErrorText
@@ -132,33 +116,22 @@ func main() {
 						cb.Text = events.ErrorText
 					}
 				}
-			} else if qData == events.NewBattleCallback {
-				msg := tgbotapi.NewMessage(chatId, "Battle")
-				//events.Stats(&msg, chatId)
-				if _, err := bot.Send(msg); err != nil {
-					log.Error(err)
-					cb.Text = events.ErrorText
-				} else {
-					cb.Text = "Бій"
-				}
-			} else if qData == events.NewEscapeCallback {
-				msg := tgbotapi.NewMessage(chatId, "Escape")
-				events.Escape(&msg)
-				if _, err := bot.Send(msg); err != nil {
-					log.Error(err)
-					cb.Text = events.ErrorText
-				} else {
-					cb.Text = "Втеча"
-				}
-			} else {
+			default:
 				cb.Text = events.UnknownCallback
 			}
 
-			_, err := bot.Send(cb)
-			if err != nil {
-				log.Error(err)
-				continue
+			if msg.Text != "" {
+				if _, err := bot.Send(msg); err != nil {
+					log.Error(err)
+					cb.Text = events.ErrorText
+				}
 			}
+
+			if _, err := bot.Send(cb); err != nil {
+				log.Error(err)
+			}
+
+			continue
 		}
 	}
 }
