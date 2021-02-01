@@ -22,7 +22,7 @@ func main() {
 	utils.InitDB()
 	defer utils.CloseDB()
 
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("TOKEN"))
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("1615610481:AAHPlLTfaFHYBo2h9Ot4IoxDG-W8avU6wnQ"))
 	if err != nil {
 		log.Fatal(err)
 	}
